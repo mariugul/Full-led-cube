@@ -5977,6 +5977,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: LED_3D_model_backup_experimental
       objectReference: {fileID: 0}
+    - target: {fileID: -779348127547119937, guid: a40e96bade5709e479d95039ecd98d9e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: -529099585834034246, guid: a40e96bade5709e479d95039ecd98d9e,
         type: 3}
       propertyPath: m_LocalPosition.y
@@ -6032,6 +6037,16 @@ PrefabInstance:
       propertyPath: m_Type
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: -144732291311832049, guid: a40e96bade5709e479d95039ecd98d9e,
+        type: 3}
+      propertyPath: m_Intensity
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: -144732291311832049, guid: a40e96bade5709e479d95039ecd98d9e,
+        type: 3}
+      propertyPath: m_Range
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 1696828618555787667, guid: a40e96bade5709e479d95039ecd98d9e,
         type: 3}
       propertyPath: m_Type
@@ -6046,6 +6061,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Intensity
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823612982899114141, guid: a40e96bade5709e479d95039ecd98d9e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2682523524013234767, guid: a40e96bade5709e479d95039ecd98d9e,
         type: 3}
