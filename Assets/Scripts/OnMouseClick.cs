@@ -13,7 +13,7 @@ public class OnMouseClick : MonoBehaviour
     {
         MeshCollider mc = gameObject.AddComponent(typeof(MeshCollider)) as MeshCollider;
     }
-
+    
     // Update is called once per frame
     void Update()
     {
@@ -30,7 +30,6 @@ public class OnMouseClick : MonoBehaviour
                     PrintName(hit.transform.gameObject);
 
                     // Toggle LED light
-                    
                     if (ledOn)
                     {
                         hit.transform.gameObject.transform.GetChild(0).GetComponent<Light>().enabled = false;

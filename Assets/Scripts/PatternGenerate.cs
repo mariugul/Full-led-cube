@@ -4,18 +4,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEditor;
+using UnityEngine.UI;
+using TMPro;
+using UnityEditor.PackageManager.Requests;
 
 public class PatternGenerate : MonoBehaviour
 {
+    public TMP_InputField inputField;
+
     private const int CUBESIZE = 64;
+    private Light[] lights;
+    ushort[] ledValuesHex = {0, 0, 0, 0};
 
     // Stored pattern table
     List<string> pattern = new List<string>();
-    UInt16[] ledValuesHex = {0xAD30, 0xB038, 0xDA21, 0x4BAC};
-
-    // Control light sources
-    private Light[] lights;
-    //public GameObject lightParent;
 
     // Path to pattern.h
     string path = "pattern.h";
@@ -24,11 +27,18 @@ public class PatternGenerate : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //Adds a listener to the input field and invokes a method when the value changes.
+        inputField.onValueChanged.AddListener(delegate { ValueChangeCheck(); });
+
         // Create patterh.h
         if (!File.Exists(path))
         {
-            createPatternFile();
+            createPatternFile(path);
         }
+
+        // Read file into input field
+        ReadString(inputField);
+       
     }
 
     // Update is called once per frame
@@ -37,14 +47,27 @@ public class PatternGenerate : MonoBehaviour
         // Generate code on Enter Press
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            //UInt16 test = 0xAD40;
-            Debug.Log("Led status: ");
             readLedValues();
             generatePattern();
+
+            // Protects ValueChangeCheck() from memory 
+            ReadString(inputField);
+           
         }
     }
 
-    void createPatternFile()
+    // Invoked when the value of the text field changes.
+    public void ValueChangeCheck()
+    {
+        /*
+        if (!readingFile) 
+            WriteString(inputField);
+        */
+    }
+
+    
+
+    void createPatternFile(string path)
     {
         // Create pattern.h
         File.Create(path).Dispose();
@@ -56,7 +79,7 @@ public class PatternGenerate : MonoBehaviour
         pattern.Add("// Includes");
         pattern.Add("//---------------------------------");
         pattern.Add("#include <stdint.h>        // Use uint_t");
-        pattern.Add("#include <avr/pgmspace.h>  // Store patterns in program memory\n");
+        pattern.Add("#include <avr/pgmspace.h>  // St3ore patterns in program memory\n");
         pattern.Add("// Pattern that LED cube will display");
         pattern.Add("//--------------------------------- ");
         pattern.Add("const PROGMEM uint16_t pattern_table[][5] = {\n");
@@ -80,34 +103,72 @@ public class PatternGenerate : MonoBehaviour
             File.WriteAllLines(path, pattern);
         }
         else
-            createPatternFile();
+            createPatternFile(path);
     }
 
     void readLedValues()
     {
-        UInt16 ledValueHex = 0;
+        ushort ledValueHex = 0;
         Array.Clear(ledValuesHex, 0, ledValuesHex.Length); // Clear array before every new reading
         
         // Iterate over every LED lightsource to find the values (on/off)
         for (int i = 0; i < CUBESIZE; i++)
         {
             // Check if LED is on or off
-            if (gameObject.transform.GetChild(i).GetChild(0).GetComponent<Light>().enabled)
-                ledValueHex += (byte)(1 << Math.Abs(i - CUBESIZE + 1)); // Bitshifts a '1' the correct order into a ushort variable
+            if (gameObject.transform.GetChild(i).GetChild(0).GetComponent<Light>().enabled == true)
+            {
+                ledValueHex += (UInt16)(1 << Math.Abs(i - CUBESIZE + 1)); // Bitshifts a '1' the correct order into a ushort variable
+                Debug.Log("LED " + i + " was on!");
+            }
             else
-                ledValueHex += (byte)(0 << Math.Abs(i - CUBESIZE + 1)); // Bitshifts a '0' the correct order into a ushort variable
+            {
+                ledValueHex += (UInt16)(0 << Math.Abs(i - CUBESIZE + 1)); // Bitshifts a '0' the correct order into a ushort variable
+                
+            }
 
             // Save hex value for UInt16 every 16th iteration (4 times total)
             if ((i + 1) % 16 == 0)
+            {
                 ledValuesHex[((i + 1) / 16) - 1] = ledValueHex; // Save hex-value of pattern to array
-            
-            Debug.Log(ledValueHex.ToString("X"));
+                Debug.Log("ledValueHex: " + ledValueHex.ToString("X"));
+                ledValueHex = 0;
+            }
         }
     }
-    void resetPattern() // Resets the generated pattern file
-    { 
 
+    [MenuItem("Tools/Write file")]
+    static void WriteString(TMP_InputField inputField)
+    {
+        string path = "pattern.h";
+
+        // Erase contents of file 
+        System.IO.File.WriteAllText(path, string.Empty);
+
+        //Write some text to the test.txt file
+        StreamWriter writer = new StreamWriter(path, true);
+        writer.WriteLine(inputField.text);
+        writer.Close();
+
+        //Re-import the file to update the reference in the editor
+        AssetDatabase.ImportAsset(path);
+        TextAsset asset = (TextAsset)Resources.Load("test");
+
+        //Print the text from the file
+        //Debug.Log(asset.text);
     }
 
+    [MenuItem("Tools/Read file")]
+    static void ReadString(TMP_InputField inputField)
+    {
+        string path = "pattern.h";
+
+        //Read the text from file
+        StreamReader reader = new StreamReader(path);
+        inputField.text = reader.ReadToEnd();
+
+        //Debug.Log(reader.ReadToEnd());
+
+        reader.Close();
+    }
     
 }

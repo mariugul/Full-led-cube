@@ -9,7 +9,7 @@ public class LedLights : MonoBehaviour
 
     // Default LED values
     const int range     = 4;
-    const int intensity = 500;
+    const int intensity = 15;
     Color color = Color.red;
 
     // Start is called before the first frame update
@@ -19,7 +19,7 @@ public class LedLights : MonoBehaviour
         slider.onValueChanged.AddListener(delegate { ValueChangeCheck(); });
 
         // Setup LEDs to default values
-        EnableLEDs();
+        DisableLEDs();
         SetRange(range);
         SetColor(color);
         SetIntensity(intensity);
