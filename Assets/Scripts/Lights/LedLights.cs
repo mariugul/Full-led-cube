@@ -19,7 +19,7 @@ public class LedLights : MonoBehaviour
         slider.onValueChanged.AddListener(delegate { ValueChangeCheck(); });
 
         // Setup LEDs to default values
-        DisableLEDs();
+        EnableLEDs();
         SetRange(range);
         SetColor(color);
         SetIntensity(intensity);

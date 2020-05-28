@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine.UI;
 using TMPro;
 using UnityEditor.PackageManager.Requests;
+using System.Globalization;
 
 public class PatternGenerate : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class PatternGenerate : MonoBehaviour
 
     private const int CUBESIZE = 64;
     private Light[] lights;
-    ushort[] ledValuesHex = {0, 0, 0, 0};
+    ushort[] ledValuesHex = { 0, 0, 0, 0 };
 
     // Stored pattern table
     List<string> pattern = new List<string>();
@@ -94,9 +95,12 @@ public class PatternGenerate : MonoBehaviour
         if (File.Exists(path))
         {
             pattern = File.ReadAllLines(path).ToList();
+
+            // Remove end of file
             pattern.Remove("#endif");
             pattern.Remove("};");
 
+            // Add new pattern
             pattern.Add("    {0x" + ledValuesHex[0].ToString("X") + ", 0x" + ledValuesHex[1].ToString("X") + ", 0x" + ledValuesHex[2].ToString("X") + ", 0x" + ledValuesHex[3].ToString("X") + ", 10},");
             pattern.Add("};");
             pattern.Add("#endif");
@@ -109,28 +113,35 @@ public class PatternGenerate : MonoBehaviour
     void readLedValues()
     {
         ushort ledValueHex = 0;
-        Array.Clear(ledValuesHex, 0, ledValuesHex.Length); // Clear array before every new reading
-        
+        //Array.Clear(ledValuesHex, 0, ledValuesHex.Length); // Clear array before every new reading
+        int j = 0;
+
         // Iterate over every LED lightsource to find the values (on/off)
         for (int i = 0; i < CUBESIZE; i++)
         {
+
             // Check if LED is on or off
             if (gameObject.transform.GetChild(i).GetChild(0).GetComponent<Light>().enabled == true)
             {
-                ledValueHex += (UInt16)(1 << Math.Abs(i - CUBESIZE + 1)); // Bitshifts a '1' the correct order into a ushort variable
-                Debug.Log("LED " + i + " was on!");
+                // Needed for correct calculation of bitshitft
+                if (((j + 1) % 16) == 0)
+                    j = 0;
+                else
+                    j++;
+
+                //Debug.Log("LED " + i + " was on!");
+                ledValueHex += (ushort)(1 << j); // Bitshifts a '1' the correct order into a ushort variable
             }
             else
             {
-                ledValueHex += (UInt16)(0 << Math.Abs(i - CUBESIZE + 1)); // Bitshifts a '0' the correct order into a ushort variable
-                
+                ledValueHex += (ushort)(0 << j); // Bitshifts a '0' the correct order into a ushort variable
+                //Debug.Log("LED " + i + " was off!");
             }
 
             // Save hex value for UInt16 every 16th iteration (4 times total)
             if ((i + 1) % 16 == 0)
             {
                 ledValuesHex[((i + 1) / 16) - 1] = ledValueHex; // Save hex-value of pattern to array
-                Debug.Log("ledValueHex: " + ledValueHex.ToString("X"));
                 ledValueHex = 0;
             }
         }
