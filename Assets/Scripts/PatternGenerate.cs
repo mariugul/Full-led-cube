@@ -101,7 +101,7 @@ public class PatternGenerate : MonoBehaviour
             pattern.Remove("};");
 
             // Add new pattern
-            pattern.Add("    {0x" + ledValuesHex[0].ToString("X") + ", 0x" + ledValuesHex[1].ToString("X") + ", 0x" + ledValuesHex[2].ToString("X") + ", 0x" + ledValuesHex[3].ToString("X") + ", 10},");
+            pattern.Add("    {0x" + ledValuesHex[0].ToString("X4") + ", 0x" + ledValuesHex[1].ToString("X4") + ", 0x" + ledValuesHex[2].ToString("X4") + ", 0x" + ledValuesHex[3].ToString("X4") + ", 10},");
             pattern.Add("};");
             pattern.Add("#endif");
             File.WriteAllLines(path, pattern);
@@ -123,11 +123,6 @@ public class PatternGenerate : MonoBehaviour
             // Check if LED is on or off
             if (gameObject.transform.GetChild(i).GetChild(0).GetComponent<Light>().enabled == true)
             {
-                // Needed for correct calculation of bitshitft
-                if (((j + 1) % 16) == 0)
-                    j = 0;
-                else
-                    j++;
 
                 //Debug.Log("LED " + i + " was on!");
                 ledValueHex += (ushort)(1 << j); // Bitshifts a '1' the correct order into a ushort variable
@@ -144,6 +139,13 @@ public class PatternGenerate : MonoBehaviour
                 ledValuesHex[((i + 1) / 16) - 1] = ledValueHex; // Save hex-value of pattern to array
                 ledValueHex = 0;
             }
+            
+            // Needed for correct calculation of bitshift
+            if (((j + 1) % 16) == 0)
+                j = 0;
+            else
+                j++;
+
         }
     }
 
