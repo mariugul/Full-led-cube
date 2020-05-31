@@ -84,6 +84,7 @@ public class PatternGenerate : MonoBehaviour
         pattern.Add("// Pattern that LED cube will display");
         pattern.Add("//--------------------------------- ");
         pattern.Add("const PROGMEM uint16_t pattern_table[][5] = {\n");
+        pattern.Add("//   Plane1  Plane2  Plane3  Plane4  Time[ms]\n");
         pattern.Add("};");
         pattern.Add("#endif");
         File.WriteAllLines(path, pattern);
@@ -113,7 +114,7 @@ public class PatternGenerate : MonoBehaviour
     void readLedValues()
     {
         ushort ledValueHex = 0;
-        //Array.Clear(ledValuesHex, 0, ledValuesHex.Length); // Clear array before every new reading
+        Array.Clear(ledValuesHex, 0, ledValuesHex.Length); // Clear array before every new reading
         int j = 0;
 
         // Iterate over every LED lightsource to find the values (on/off)
@@ -139,13 +140,13 @@ public class PatternGenerate : MonoBehaviour
                 ledValuesHex[((i + 1) / 16) - 1] = ledValueHex; // Save hex-value of pattern to array
                 ledValueHex = 0;
             }
-            
+
             // Needed for correct calculation of bitshift
             if (((j + 1) % 16) == 0)
                 j = 0;
             else
                 j++;
-
+            
         }
     }
 
