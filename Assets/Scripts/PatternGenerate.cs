@@ -80,10 +80,10 @@ public class PatternGenerate : MonoBehaviour
         pattern.Add("// Includes");
         pattern.Add("//---------------------------------");
         pattern.Add("#include <stdint.h>        // Use uint_t");
-        pattern.Add("#include <avr/pgmspace.h>  // St3ore patterns in program memory\n");
+        pattern.Add("#include <avr/pgmspace.h>  // Store patterns in program memory\n");
         pattern.Add("// Pattern that LED cube will display");
         pattern.Add("//--------------------------------- ");
-        pattern.Add("const PROGMEM uint16_t pattern_table[][5] = {\n");
+        pattern.Add("const PROGMEM uint16_t pattern_table[] = {\n");
         pattern.Add("//   Plane1  Plane2  Plane3  Plane4  Time[ms]\n");
         pattern.Add("};");
         pattern.Add("#endif");
