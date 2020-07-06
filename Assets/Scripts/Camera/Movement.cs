@@ -42,7 +42,7 @@ public class Movement : MonoBehaviour
             //Convert from degrees to radians
             PosX = PosX / 180 * Mathf.PI;
             PosY = PosY / 180 * Mathf.PI;
-
+            
             //Calculate new coords
             float X = R * Mathf.Sin(PosX) * Mathf.Cos(PosY);
             float Z = R * Mathf.Sin(PosX) * Mathf.Sin(PosY);
