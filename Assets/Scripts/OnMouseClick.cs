@@ -11,8 +11,7 @@ public class OnMouseClick : MonoBehaviour
     RaycastHit hit;
 
     // List to store the on or off status of LEDs
-    List<bool> ledStatus = new List<bool>();
-    Dictionary<string, bool> ledStatusDic = new Dictionary<string, bool>();
+    Dictionary<string, bool> ledStatus = new Dictionary<string, bool>();
 
     // Start is called before the first frame update
     void Start()
@@ -22,10 +21,10 @@ public class OnMouseClick : MonoBehaviour
         // Initialize state of LEDs to list
         for (int i = 1; i <= 64; i++)
         {
-            ledStatusDic.Add("led" + i, false);
+            ledStatus.Add("led" + i, false);
         }
 
-        foreach (KeyValuePair<string, bool> led in ledStatusDic)
+        foreach (KeyValuePair<string, bool> led in ledStatus)
         {
             //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
             Console.WriteLine("Key = {0}, Value = {1}", led.Key, led.Value);
@@ -50,23 +49,20 @@ public class OnMouseClick : MonoBehaviour
                     // Save name of clicked LED
                     string clickedLed = hit.transform.gameObject.name;
 
-                    // Save the status of the LED
-                    bool ledStatus;
-
                     // Look up the clicked LEDs status in dictionary and save to ledStatus
-                    ledStatusDic.TryGetValue(clickedLed, out ledStatus);
+                    ledStatus.TryGetValue(clickedLed, out bool clickedLedStatus);
 
                     // Toggle LED light
-                    if (ledStatus)
+                    if (clickedLedStatus)
                     {
                         hit.transform.gameObject.transform.GetChild(0).GetComponent<Light>().enabled = false;
-                        ledStatusDic[clickedLed] = false;
+                        ledStatus[clickedLed] = false;
                           
                     }
                     else
                     {
                         hit.transform.gameObject.transform.GetChild(0).GetComponent<Light>().enabled = true;
-                        ledStatusDic[clickedLed] = true;
+                        ledStatus[clickedLed] = true;
                     }
                     
                 }
