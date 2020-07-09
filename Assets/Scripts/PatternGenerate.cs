@@ -10,9 +10,11 @@ using TMPro;
 using UnityEditor.PackageManager.Requests;
 using System.Globalization;
 
+
 public class PatternGenerate : MonoBehaviour
 {
     public TMP_InputField inputField;
+    public TMP_InputField inputFieldTime;
 
     private const int CUBESIZE = 64;
     private Light[] lights;
@@ -21,9 +23,20 @@ public class PatternGenerate : MonoBehaviour
     // Stored pattern table
     List<string> pattern = new List<string>();
 
+    // Stored pattern table for redo (ctrl + z)
+    List<string> pattern_redo = new List<string>();
+
     // Path to pattern.h
     string path = "pattern.h";
-    
+
+    // Used for the redo functionality
+    int nrOfPatternsGenerated = 0;
+
+    // Nr of lines before the pattern table in pattern.h
+    int defaultLines = 11;
+
+    // Nr of lines after the pattern table in pattern.h
+    int endLines = 2;
 
     // Start is called before the first frame update
     void Start()
@@ -37,23 +50,95 @@ public class PatternGenerate : MonoBehaviour
             createPatternFile(path);
         }
 
-        // Read file into input field
-        ReadString(inputField);
-       
+        // Initialize pattern list with the contents of pattern.h
+        pattern = File.ReadAllLines(path).ToList();
+
+        refreshInputField(inputField);
+    
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Generate code on Enter Press
-        if (Input.GetKeyDown(KeyCode.Return))
+
+    }
+
+    // Redo functionality
+    void OnGUI()
+    {
+        // Ctrl + Z clicked
+        Event e = Event.current;
+        if (e.type == EventType.KeyDown && e.control && e.keyCode == KeyCode.Z)
+        {
+            //prevent IndexOutOfRangeException for empty list
+            if (pattern.Any()) 
+            {
+                // Remove previous generated pattern line
+                if (nrOfPatternsGenerated > 0)
+                {
+                    // Count down the number of generated pattern lines
+                    nrOfPatternsGenerated -= 1;
+
+                    // Remove end of file
+                    pattern.Remove("#endif");
+                    pattern.Remove("};");
+
+                    // Remove last added line
+                    pattern.RemoveAt(pattern.Count - 1);
+
+                    // Add end of file text
+                    pattern.Add("};");
+                    pattern.Add("#endif");
+
+                    // Write to file
+                    File.WriteAllLines(path, pattern);
+
+                    refreshInputField(inputField);
+                }
+            }
+        }
+
+        // Enter clicked
+        if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Return)
         {
             readLedValues();
             generatePattern();
+            refreshInputField(inputField);
 
-            // Protects ValueChangeCheck() from memory 
-            ReadString(inputField);
-           
+            // Add to generated patterns for redo functionality
+            nrOfPatternsGenerated += 1;
+        }
+
+        // Delete clicked
+        if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Delete)
+        {
+            //var contains = File.ReadAllLines(path).Contains("const PROGMEM uint16_t pattern_table[] = {");
+            
+            int lineCount = File.ReadLines(path).Count() - defaultLines - endLines;
+
+            // Only delete the contents of the array in pattern.h
+            if (lineCount > 0)
+            {
+                // Remove end of file
+                pattern.Remove("#endif");
+                pattern.Remove("};");
+
+                // Remove last added line
+                pattern.RemoveAt(pattern.Count - 1);
+
+                // Add end of file text
+                pattern.Add("};");
+                pattern.Add("#endif");
+
+                // Write to file
+                File.WriteAllLines(path, pattern);
+
+                refreshInputField(inputField);
+
+                // Decrement the redo
+                if (nrOfPatternsGenerated != 0)
+                    nrOfPatternsGenerated -= 1;
+                }
         }
     }
 
@@ -84,7 +169,6 @@ public class PatternGenerate : MonoBehaviour
         pattern.Add("// Pattern that LED cube will display");
         pattern.Add("//--------------------------------- ");
         pattern.Add("const PROGMEM uint16_t pattern_table[] = {\n");
-        pattern.Add("//   Plane1  Plane2  Plane3  Plane4  Time[ms]\n");
         pattern.Add("};");
         pattern.Add("#endif");
         File.WriteAllLines(path, pattern);
@@ -101,10 +185,16 @@ public class PatternGenerate : MonoBehaviour
             pattern.Remove("#endif");
             pattern.Remove("};");
 
-            // Add new pattern
-            pattern.Add("    {0x" + ledValuesHex[0].ToString("X4") + ", 0x" + ledValuesHex[1].ToString("X4") + ", 0x" + ledValuesHex[2].ToString("X4") + ", 0x" + ledValuesHex[3].ToString("X4") + ", 10},");
+            // Add new pattern to list
+            pattern.Add("    {0x" + ledValuesHex[0].ToString("X4") +
+                           ", 0x" + ledValuesHex[1].ToString("X4") + 
+                           ", 0x" + ledValuesHex[2].ToString("X4") + 
+                           ", 0x" + ledValuesHex[3].ToString("X4") + 
+                           ", "   + inputFieldTime.text + "},");
             pattern.Add("};");
             pattern.Add("#endif");
+
+            // Write list to pattern.h
             File.WriteAllLines(path, pattern);
         }
         else
@@ -172,15 +262,13 @@ public class PatternGenerate : MonoBehaviour
     }
 
     [MenuItem("Tools/Read file")]
-    static void ReadString(TMP_InputField inputField)
+    static void refreshInputField(TMP_InputField inputField)
     {
         string path = "pattern.h";
 
         //Read the text from file
         StreamReader reader = new StreamReader(path);
         inputField.text = reader.ReadToEnd();
-
-        //Debug.Log(reader.ReadToEnd());
 
         reader.Close();
     }
